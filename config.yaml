@@ -1,0 +1,78 @@
+# Configurazione del modello di predizione Mondiali 2026 (fase a eliminazione).
+# Riferimento: docs/CLAUDE.md, sezione 1.
+#
+# - I parametri "FISSATI" non vanno relitigati: rappresentano decisioni di design.
+# - I parametri "APERTI" vanno scelti per validazione temporale (grid search su log-loss
+#   out-of-sample), MAI a mano.
+
+# =============================================================================
+# FISSATI
+# =============================================================================
+
+perimeter:
+  scope: knockout_only          # solo fase a eliminazione; niente gironi
+
+goals:
+  distribution: poisson_dixon_coles
+  rho_bounds: [-0.2, 0.2]       # vincolo su rho per non-negatività (cfr. #4)
+
+competition_weights:
+  amichevole: 0.4
+  qualificazioni: 0.8
+  nations_league: 0.8
+  finali_continentali: 1.0
+  mondiali: 1.0
+  default_unmapped: 0.6         # tornei non riconosciuti: peso conservativo
+
+include_friendlies: true        # le amichevoli servono come ponti cross-confederazione
+
+extra_time:
+  lambda_factor: 0.3333333333   # lambda_ET = lambda / 3
+  mu_factor: 0.3333333333       # mu_ET     = mu / 3
+
+penalty_shootout:
+  base_prob_winner: 0.50        # default: rigori come moneta
+  edge_to_favorite: 0.00        # opzionale 0.02 -> 0.52 al favorito sui 90'
+
+kelly:
+  fraction: 0.25                # Kelly 1/4 (mai pieno)
+
+outputs:
+  enable_output_a_calibrated: true   # A: blend pesante col mercato (affidabilità)
+  enable_output_b_pure_model: true   # B: modello puro (misura dell'edge)
+
+# =============================================================================
+# APERTI — scegliere per validazione (cfr. #9)
+# =============================================================================
+
+time_decay:
+  half_life_years: 2.0
+  half_life_years_grid: [1.0, 1.5, 2.0, 2.5, 3.0, 4.0]
+
+market_blending:
+  w_default: 0.7                # peso del mercato nell'output A
+  w_grid: [0.3, 0.5, 0.7, 0.85, 0.95]
+
+betting:
+  min_edge_threshold: 0.03      # 3% di edge minimo per puntare
+  min_edge_threshold_grid: [0.02, 0.03, 0.04, 0.05]
+
+# =============================================================================
+# Host policy 2026 (cfr. #8) — scelta di giudizio, non validabile
+# =============================================================================
+
+host_advantage_2026:
+  host_countries: [USA, Canada, Mexico]
+  gamma_full_at_home: 1.0       # gamma pieno per host che gioca nel proprio paese
+  gamma_reduced_co_host: 0.5    # gamma ridotto se gioca in un altro dei tre host
+  gamma_neutral: 0.0            # tutte le altre
+
+# =============================================================================
+# Path
+# =============================================================================
+
+paths:
+  data_raw: data/raw
+  data_processed: data/processed
+  models: data/models
+  notebooks: notebooks
