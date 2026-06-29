@@ -35,6 +35,7 @@ class CompetitionWeights(BaseModel):
     amichevole: PositiveFloat = 0.4
     qualificazioni: PositiveFloat = 0.8
     nations_league: PositiveFloat = 0.8
+    sub_continentali: PositiveFloat = 0.6
     finali_continentali: PositiveFloat = 1.0
     mondiali: PositiveFloat = 1.0
     default_unmapped: PositiveFloat = 0.6

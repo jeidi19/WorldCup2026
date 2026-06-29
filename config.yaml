@@ -20,6 +20,7 @@ competition_weights:
   amichevole: 0.4
   qualificazioni: 0.8
   nations_league: 0.8
+  sub_continentali: 0.6      # coppe zonali (CECAFA, COSAFA, Gulf Cup, AFF, ecc.)
   finali_continentali: 1.0
   mondiali: 1.0
   default_unmapped: 0.6         # tornei non riconosciuti: peso conservativo

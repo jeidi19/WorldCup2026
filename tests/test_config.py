@@ -27,6 +27,8 @@ def test_fixed_values_match_handoff():
     assert config.competition_weights.amichevole == 0.4
     assert config.competition_weights.mondiali == 1.0
     assert config.competition_weights.qualificazioni == 0.8
+    assert config.competition_weights.sub_continentali == 0.6
+    assert config.competition_weights.default_unmapped == 0.6
     assert config.kelly.fraction == 0.25
     assert config.penalty_shootout.base_prob_winner == 0.50
     assert config.include_friendlies is True

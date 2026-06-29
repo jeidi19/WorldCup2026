@@ -78,6 +78,36 @@ North Vietnam, Vietnam Republic) sono MANTENUTE come segnale (servono per stimar
 delle squadre superstiti), ma non saranno predette al Mondiale 2026 perché non sono in
 tabellone. Vedi `src/data/team_policies.py` per i dettagli.
 
+## Pesatura partite (per il fit Dixon-Coles)
+
+```bash
+python -m src.data.build_weights
+# oppure con reference_date custom (per la validazione temporale)
+python -m src.data.build_weights --reference-date 2022-12-31
+```
+
+Genera `data/processed/matches_weighted.parquet` (tutte le colonne + `weight`) e un
+`weights_metadata.json` con: reference_date usata, emivita, statistiche dei pesi, lista dei
+tornei non mappati.
+
+**Peso finale:** `w = w_time · w_comp`.
+
+- **w_time** = `exp(-ξ · giorni_fa)`, con `ξ = ln(2) / (emivita · 365.25)`. Emivita di default
+  2 anni (vedi `time_decay.half_life_years` in `config.yaml`, grid tunabile in #9). Una partita
+  con `date == reference_date` pesa 1; a una emivita pesa 0.5.
+- **w_comp** = moltiplicatore dal bucket del torneo (vedi `src/data/competition_policies.py`):
+  - 1.0 — `mondiali` (FIFA World Cup, Confederations Cup, Finalissima)
+  - 1.0 — `finali_continentali` (Euro, Copa América, AFCON, Asian Cup, Gold, OFC)
+  - 0.8 — `qualificazioni` (tutti i `... qualification`, anche fallback pattern)
+  - 0.8 — `nations_league` (UEFA / CONCACAF Nations League)
+  - 0.6 — `sub_continentali` (CECAFA, COSAFA, Gulf Cup, AFF, SAFF, EAFF, WAFF, UNCAF, ...)
+  - 0.4 — `amichevole` (Friendly, Merdeka, BHC, Nordic, King's Cup, Korea Cup, ...)
+  - 0.6 — `default_unmapped` per tornei non riconosciuti (loggati per revisione)
+
+**Drop di pre-fit:** i tornei **multi-sport / U-23** (Asian Games, SEA Games, Island Games,
+Pacific Games, Pan American Games, ...) vengono rimossi prima del calcolo dei pesi: schierano
+formazioni B / U-23 e contaminerebbero la stima delle forze delle nazionali A.
+
 ## Struttura
 
 ```
