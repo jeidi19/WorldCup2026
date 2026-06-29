@@ -51,7 +51,7 @@ def test_dixon_coles_defaults():
 
 def test_host_policy_2026():
     config = load_config()
-    assert set(config.host_advantage_2026.host_countries) == {"USA", "Canada", "Mexico"}
+    assert set(config.host_advantage_2026.host_teams) == {"United States", "Canada", "Mexico"}
     assert config.host_advantage_2026.gamma_full_at_home > config.host_advantage_2026.gamma_reduced_co_host
     assert config.host_advantage_2026.gamma_neutral == 0.0
 

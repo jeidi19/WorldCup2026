@@ -245,6 +245,37 @@ del bracket (#16). I supplementari usano una mini-matrice con `λ_ET = λ · k_�
 `μ_ET = μ · k_μ` (default `k_λ = k_μ = 1/3`, configurabile in `config.yaml`); i rigori
 sono una coin flip pesata con `+edge_to_favorite` al favorito sui 90' (default 0).
 
+## Host policy Mondiale 2026 (USA/Canada/Mexico)
+
+`src/model/host_policy.py` implementa la policy del vantaggio casa per il Mondiale
+tri-ospitante. **Assunzione esplicita** (nessun precedente storico):
+
+- γ **pieno** se la squadra gioca nel proprio paese ospitante (es. USA in USA);
+- γ **ridotto a metà** se un host gioca in un altro dei tre paesi ospitanti
+  (es. USA a Toronto);
+- γ = 0 (campo neutro effettivo) in tutti gli altri casi (es. Argentina in USA, o
+  USA in Italia).
+
+Configurabile in `config.yaml → host_advantage_2026`. La policy si attiva passando
+`venue_country` alle API esistenti:
+
+```python
+from src.model.cascade import advance_probability_from_config
+
+# USA in casa propria vs Argentina
+out = advance_probability_from_config(model, "United States", "Argentina", cfg,
+                                       venue_country="United States")
+# out.is_neutral == False, out.p_home_advance riflette γ pieno
+
+# Argentina in USA (venue host ma squadra non-host) → effettivamente neutro
+out = advance_probability_from_config(model, "Argentina", "Brazil", cfg,
+                                       venue_country="United States")
+# out.is_neutral == True (scale di γ = 0)
+```
+
+Priorità dei parametri (top→bottom): `home_advantage_scale` esplicito > `venue_country` +
+`host_policy` > `is_neutral`.
+
 ## Struttura
 
 ```

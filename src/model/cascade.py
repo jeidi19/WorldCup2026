@@ -23,7 +23,7 @@ from typing import Literal
 
 import numpy as np
 
-from src.config import AppConfig
+from src.config import AppConfig, HostAdvantage2026
 from src.model.fit import DixonColesModel
 from src.model.outcomes import (
     DEFAULT_MAX_GOALS,
@@ -121,6 +121,9 @@ def advance_probability(
     away: str,
     *,
     is_neutral: bool = False,
+    home_advantage_scale: float | None = None,
+    venue_country: str | None = None,
+    host_policy: HostAdvantage2026 | None = None,
     extra_time_lambda_factor: float = 1.0 / 3.0,
     extra_time_mu_factor: float = 1.0 / 3.0,
     penalty_base_prob: float = 0.5,
@@ -130,10 +133,17 @@ def advance_probability(
     """Probabilità che `home` superi il turno contro `away` (eliminazione diretta).
 
     Cascata: 90' → supplementari (mini-matrice con tassi scalati) → rigori.
-    `is_neutral=True` disattiva il vantaggio casa γ in entrambe le fasi.
+    Per il vantaggio casa, vedi `expected_goals` (priorità: `home_advantage_scale` >
+    `venue_country` + `host_policy` > `is_neutral`).
     """
     # 90'
-    lam, mu = expected_goals(model, home, away, is_neutral=is_neutral)
+    lam, mu = expected_goals(
+        model, home, away,
+        is_neutral=is_neutral,
+        home_advantage_scale=home_advantage_scale,
+        venue_country=venue_country,
+        host_policy=host_policy,
+    )
     matrix_90 = build_score_matrix(lam, mu, model.rho, max_goals=max_goals)
     p_h_90, p_d_90, p_a_90 = _split_score_matrix(matrix_90)
 
@@ -154,10 +164,17 @@ def advance_probability(
     p_h_advance = p_h_90 + p_d_90 * (p_h_et + p_d_et * p_h_penalty)
     p_a_advance = 1.0 - p_h_advance
 
+    # is_neutral effettivo: vero se lo scale risultante è 0 (γ non applicato)
+    from src.model.outcomes import _resolve_home_advantage_scale  # late import per evitare cicli
+    effective_scale = _resolve_home_advantage_scale(
+        home, is_neutral, home_advantage_scale, venue_country, host_policy
+    )
+    effective_neutral = effective_scale == 0.0
+
     return AdvanceOutcome(
         home_team=home,
         away_team=away,
-        is_neutral=is_neutral,
+        is_neutral=effective_neutral,
         p_home_win_90=p_h_90,
         p_draw_90=p_d_90,
         p_away_win_90=p_a_90,
@@ -182,12 +199,15 @@ def advance_probability_from_config(
     config: AppConfig,
     *,
     is_neutral: bool = False,
+    venue_country: str | None = None,
     max_goals: int = DEFAULT_MAX_GOALS,
 ) -> AdvanceOutcome:
-    """Wrapper che legge i parametri ET e rigori da `AppConfig`."""
+    """Wrapper che legge ET, rigori e (se `venue_country` è fornito) host policy da `AppConfig`."""
     return advance_probability(
         model, home, away,
         is_neutral=is_neutral,
+        venue_country=venue_country,
+        host_policy=config.host_advantage_2026 if venue_country is not None else None,
         extra_time_lambda_factor=config.extra_time.lambda_factor,
         extra_time_mu_factor=config.extra_time.mu_factor,
         penalty_base_prob=config.penalty_shootout.base_prob_winner,

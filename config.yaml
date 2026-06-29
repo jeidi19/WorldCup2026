@@ -67,7 +67,7 @@ betting:
 # =============================================================================
 
 host_advantage_2026:
-  host_countries: [USA, Canada, Mexico]
+  host_teams: [United States, Canada, Mexico]   # nomi-squadra FIFA del dataset
   gamma_full_at_home: 1.0       # gamma pieno per host che gioca nel proprio paese
   gamma_reduced_co_host: 0.5    # gamma ridotto se gioca in un altro dei tre host
   gamma_neutral: 0.0            # tutte le altre

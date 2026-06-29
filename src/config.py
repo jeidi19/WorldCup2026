@@ -96,7 +96,9 @@ class Betting(BaseModel):
 
 class HostAdvantage2026(BaseModel):
     model_config = _StrictModel
-    host_countries: list[str] = Field(default_factory=lambda: ["USA", "Canada", "Mexico"])
+    host_teams: list[str] = Field(
+        default_factory=lambda: ["United States", "Canada", "Mexico"]
+    )
     gamma_full_at_home: float = 1.0
     gamma_reduced_co_host: float = 0.5
     gamma_neutral: float = 0.0
