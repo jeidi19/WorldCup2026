@@ -30,6 +30,14 @@ class GoalsConfig(BaseModel):
     rho_bounds: tuple[float, float] = (-0.2, 0.2)
 
 
+class DixonColesConfig(BaseModel):
+    """Iperparametri della likelihood Dixon-Coles (Issue #4)."""
+
+    model_config = _StrictModel
+    identifiability_penalty_strength: PositiveFloat = 1e4
+    tau_floor: PositiveFloat = 1e-10
+
+
 class CompetitionWeights(BaseModel):
     model_config = _StrictModel
     amichevole: PositiveFloat = 0.4
@@ -108,6 +116,7 @@ class AppConfig(BaseModel):
     model_config = _StrictModel
     perimeter: PerimeterConfig = Field(default_factory=PerimeterConfig)
     goals: GoalsConfig = Field(default_factory=GoalsConfig)
+    dixon_coles: DixonColesConfig = Field(default_factory=DixonColesConfig)
     competition_weights: CompetitionWeights = Field(default_factory=CompetitionWeights)
     include_friendlies: bool = True
     extra_time: ExtraTime = Field(default_factory=ExtraTime)

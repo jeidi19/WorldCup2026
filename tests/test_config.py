@@ -42,6 +42,13 @@ def test_open_defaults_match_handoff():
     assert config.betting.min_edge_threshold == pytest.approx(0.03)
 
 
+def test_dixon_coles_defaults():
+    config = load_config()
+    assert config.dixon_coles.identifiability_penalty_strength == pytest.approx(1e4)
+    assert config.dixon_coles.tau_floor == pytest.approx(1e-10)
+    assert config.goals.rho_bounds == (-0.2, 0.2)
+
+
 def test_host_policy_2026():
     config = load_config()
     assert set(config.host_advantage_2026.host_countries) == {"USA", "Canada", "Mexico"}

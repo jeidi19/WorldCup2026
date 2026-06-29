@@ -16,6 +16,10 @@ goals:
   distribution: poisson_dixon_coles
   rho_bounds: [-0.2, 0.2]       # vincolo su rho per non-negatività (cfr. #4)
 
+dixon_coles:
+  identifiability_penalty_strength: 1.0e4   # peso del termine (mean(alpha))^2 + (mean(beta))^2 in NLL
+  tau_floor: 1.0e-10                        # floor su tau(x,y; lam, mu, rho) prima del log
+
 competition_weights:
   amichevole: 0.4
   qualificazioni: 0.8

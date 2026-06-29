@@ -108,6 +108,61 @@ tornei non mappati.
 Pacific Games, Pan American Games, ...) vengono rimossi prima del calcolo dei pesi: schierano
 formazioni B / U-23 e contaminerebbero la stima delle forze delle nazionali A.
 
+## Modello Dixon-Coles (NLL pesata)
+
+Cuore matematico del progetto, modulo `src/model/dixon_coles.py`.
+
+**Modello dei gol** per una partita home `h` vs away `a`:
+
+```
+λ = exp(α[h] + β[a] + γ·is_home)   # gol attesi della casa
+μ = exp(α[a] + β[h])                # gol attesi dell'ospite
+```
+
+con `is_home = 1` se la partita NON è in campo neutro, 0 altrimenti.
+
+**Correzione Dixon-Coles** τ (raddrizza i 4 punteggi bassi correlati):
+
+```
+τ(0,0) = 1 − λ·μ·ρ
+τ(0,1) = 1 + λ·ρ
+τ(1,0) = 1 + μ·ρ
+τ(1,1) = 1 − ρ
+τ(x,y) = 1                          altrimenti
+
+P(x,y) = τ(x,y; λ, μ, ρ) · Poisson(x; λ) · Poisson(y; μ)
+```
+
+**NLL pesata + penalty di identificabilità** (per rimuovere l'invarianza α→α+c, β→β−c):
+
+```
+NLL(θ) = −Σ_i w_i · log P(x_i, y_i; θ)
+       + λ_id · ( mean(α)^2 + mean(β)^2 )
+```
+
+`λ_id` = `dixon_coles.identifiability_penalty_strength` (default `1e4`). Un floor su τ
+(`tau_floor=1e-10`) evita `log(≤0)` quando il solver esplora la regione patologica.
+
+Uso tipico:
+
+```python
+from src.model.indexing import TeamIndexer, prepare_match_data
+from src.model.dixon_coles import initial_params, dixon_coles_nll_from_config
+from src.config import load_config
+import pandas as pd
+
+df = pd.read_parquet("data/processed/matches_weighted.parquet")
+indexer = TeamIndexer.from_match_dataframe(df)
+data = prepare_match_data(df, indexer)
+weights = df["weight"].to_numpy()
+config = load_config()
+
+p0 = initial_params(indexer.n_teams)                 # 2·315 + 2 = 632 parametri
+nll = dixon_coles_nll_from_config(p0, data, weights, config)
+```
+
+Il **fit** completo (L-BFGS-B con bounds `|ρ|≤0.2`, `γ>0`) è in Issue #5.
+
 ## Struttura
 
 ```
