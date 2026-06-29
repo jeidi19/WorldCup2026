@@ -190,6 +190,30 @@ model.to_dataframe().head(20)            # rating ordinati per α − β
 - nessun prior/shrinkage: squadre con poche partite hanno α/β molto rumorosi;
 - niente xG, forma recente, infortuni — è il piano di M6.
 
+## Esiti dei 90 minuti
+
+Dato il modello fittato, `src/model/outcomes.py` calcola la matrice 11×11 dei punteggi
+e i tre esiti aggregati (`P(home_win)`, `P(draw)`, `P(away_win)`) per una partita:
+
+```python
+from src.model.fit import DixonColesModel
+from src.model.outcomes import match_outcome_90
+
+model = DixonColesModel.load("data/models/dixon_coles.json")
+out = match_outcome_90(model, "Italy", "Norway", is_neutral=True)
+# Outcome90(p_home_win=0.376, p_draw=0.263, p_away_win=0.361,
+#           expected_home_goals=1.45, expected_away_goals=1.42, ...)
+```
+
+La matrice `P(x, y)` viene costruita come outer product di due Poisson (λ, μ),
+corretta sui 4 punteggi bassi con la Dixon-Coles `τ`, e rinormalizzata. La coda
+fuori da 11×11 è ≪ 10⁻⁴ per partite con `λ, μ ≤ 2`; per partite molto sbilanciate
+(top vs weak, λ alto), la rinormalizzazione conserva i 3 esiti aggregati ma altera
+P(score=x) per x grandi (mai usato nella cascata).
+
+`Outcome90.expected_home_goals = λ` e `expected_away_goals = μ` sono i tassi puri
+che #7 riusa per i supplementari (`λ_ET = λ/3`, `μ_ET = μ/3`).
+
 ## Struttura
 
 ```
