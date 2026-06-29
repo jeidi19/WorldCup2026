@@ -27,7 +27,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.config import AppConfig, load_config
-from src.data.competition_policies import TOURNAMENT_DROP_LIST
+from src.data.competition_policies import TOURNAMENT_DROP_LIST, should_drop_tournament
 from src.data.weights import compute_weights_from_config
 
 logger = logging.getLogger(__name__)
@@ -38,12 +38,14 @@ METADATA_FILENAME = "weights_metadata.json"
 
 
 def drop_multi_sport(df: pd.DataFrame) -> pd.DataFrame:
-    """Rimuove le righe i cui tornei sono in `TOURNAMENT_DROP_LIST`."""
-    mask = df["tournament"].isin(TOURNAMENT_DROP_LIST)
+    """Rimuove le righe da tornei in `TOURNAMENT_DROP_LIST` o che matchano i pattern di drop
+    (es. tutte le competizioni CONIFA/ConIFA, federazione non-FIFA)."""
+    mask = df["tournament"].apply(should_drop_tournament)
     n_dropped = int(mask.sum())
     n_tournaments_present = df.loc[mask, "tournament"].nunique() if n_dropped else 0
     logger.info(
-        "Drop tornei multi-sport / U-23 (%d in lista, %d presenti nel dataset): %d partite droppate",
+        "Drop tornei multi-sport / U-23 / non-FIFA (%d esplicit + pattern CONIFA, "
+        "%d distinti nel dataset): %d partite droppate",
         len(TOURNAMENT_DROP_LIST),
         n_tournaments_present,
         n_dropped,

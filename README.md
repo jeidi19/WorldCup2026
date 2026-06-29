@@ -161,7 +161,34 @@ p0 = initial_params(indexer.n_teams)                 # 2·315 + 2 = 632 parametr
 nll = dixon_coles_nll_from_config(p0, data, weights, config)
 ```
 
-Il **fit** completo (L-BFGS-B con bounds `|ρ|≤0.2`, `γ>0`) è in Issue #5.
+## Fit del modello (L-BFGS-B)
+
+```bash
+python -m src.model.fit                            # default: ~minuti, salva data/models/dixon_coles.json
+python -m src.model.fit --top 20                   # stampa le top 20 squadre per strength
+python -m src.model.fit --max-fun 1000000          # budget alto se non converge
+```
+
+Minimizza la NLL Dixon-Coles con `scipy.optimize.minimize(method="L-BFGS-B")`, gradient
+**numerico** (finite-diff). Bounds: `γ > 0`, `ρ ∈ [-0.2, 0.2]`, `α/β` liberi. Dopo il
+fit, applica `center_alpha_beta` per ottenere `mean(α) = 0` (trasformazione invariante
+del modello).
+
+L'output `DixonColesModel` (JSON serializzato) contiene per ogni squadra `α` (attacco
+sopra media in scala log-gol) e `β` (difesa: positivo = vulnerabile), più `γ` (vantaggio
+casa), `ρ` (correzione DC), metadata di fit (NLL finale, n_iter, converged).
+
+```python
+from src.model.fit import DixonColesModel
+model = DixonColesModel.load("data/models/dixon_coles.json")
+model.to_dataframe().head(20)            # rating ordinati per α − β
+```
+
+**Limiti noti del modello base** (mitigabili in #17 con valore rosa Transfermarkt):
+- bias confederazione: CONMEBOL gioca un campionato "tutti contro tutti" che espone
+  forze relative più di altri continenti → rating sudamericani spesso gonfiati;
+- nessun prior/shrinkage: squadre con poche partite hanno α/β molto rumorosi;
+- niente xG, forma recente, infortuni — è il piano di M6.
 
 ## Struttura
 

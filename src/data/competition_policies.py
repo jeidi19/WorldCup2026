@@ -232,6 +232,16 @@ def _matches_nations_league_pattern(name: str) -> bool:
     return "Nations League" in name and not _matches_qualification_pattern(name)
 
 
+def _matches_conifa_pattern(name: str) -> bool:
+    """True se il nome contiene 'CONIFA' o 'ConIFA' (case-insensitive).
+
+    CONIFA è una federazione alternativa per nazioni non-FIFA. I suoi tornei
+    coinvolgono regioni/diaspore/popoli senza stato (vedi NON_FIFA_DENY_LIST):
+    droppiamo le partite a priori — non rappresentano nazionali FIFA.
+    """
+    return "conifa" in name.lower()
+
+
 def classify_tournament(name: str) -> str | None:
     """Ritorna il bucket di appartenenza o `None` se il torneo non è classificabile.
 
@@ -252,8 +262,8 @@ def classify_tournament(name: str) -> str | None:
 
 
 def should_drop_tournament(name: str) -> bool:
-    """True se le partite di quel torneo vanno droppate (multi-sport / U-23)."""
-    return name in TOURNAMENT_DROP_LIST
+    """True se le partite di quel torneo vanno droppate (multi-sport / U-23 / non-FIFA)."""
+    return name in TOURNAMENT_DROP_LIST or _matches_conifa_pattern(name)
 
 
 __all__ = [

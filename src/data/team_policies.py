@@ -36,14 +36,24 @@ NON_FIFA_DENY_LIST: frozenset[str] = frozenset(
         "Padania",
         "Yorkshire",
         "Sark",
-        # Regionali / sub-statali
+        # Regionali / sub-statali europei
         "Catalonia",
         "Basque Country",
         "Iraqi Kurdistan",
         "Kurdistan",
-        "Zanzibar",
         "Parishes of Jersey",
-        # Territori non-FIFA
+        "Occitania",
+        "County of Nice",
+        "Provence",
+        "Two Sicilies",
+        "Elba Island",
+        "Gozo",
+        "Ticino",
+        "Ellan Vannin",
+        "Felvidék",
+        "Kárpátalja",
+        "Székely Land",
+        # Territori contestati / Stati de facto non-FIFA
         "Tibet",
         "Greenland",
         "Vatican City",
@@ -52,9 +62,38 @@ NON_FIFA_DENY_LIST: frozenset[str] = frozenset(
         "Jersey",
         "Guernsey",
         "Monaco",
-        # Diaspore / squadre etniche non riconosciute
+        "Northern Cyprus",
+        "Abkhazia",
+        "South Ossetia",
+        "Artsakh",
+        "Western Sahara",
+        "East Turkestan",
+        "Chagos Islands",
+        "Somaliland",
+        # Regioni separatiste / popoli senza stato
+        "Tamil Eelam",
+        "Cascadia",
+        "Chameria",
+        "Western Armenia",
+        "Biafra",
+        "Ambazonia",
+        "Barawa",
+        "Darfur",
+        "Matabeleland",
+        "Maule Sur",
+        "Mapuche",
+        "Aymara",
+        "Yoruba Nation",
+        "Panjab",
+        "Kabylia",
+        # Diaspore / popoli senza territorio
         "United Koreans in Japan",
-        "Sapmi",
+        "Sápmi",                # nome FIFA-standard del popolo Sami
+        "Arameans Suryoye",
+        "Hmong",
+        "Romani people",
+        # Sub-nazionali africani
+        "Zanzibar",
     }
 )
 

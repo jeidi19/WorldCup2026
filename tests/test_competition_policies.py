@@ -147,6 +147,17 @@ def test_should_drop_multi_sport():
     assert should_drop_tournament("Pan American Games")
 
 
+def test_should_drop_conifa_pattern():
+    """Pattern drop: tutti i tornei CONIFA / ConIFA (federazione non-FIFA)."""
+    assert should_drop_tournament("CONIFA World Football Cup")
+    assert should_drop_tournament("CONIFA European Football Cup")
+    assert should_drop_tournament("CONIFA Asia Cup")
+    assert should_drop_tournament("CONIFA Africa Football Cup")
+    assert should_drop_tournament("CONIFA South America Football Cup")
+    assert should_drop_tournament("CONIFA World Football Cup qualification")
+    assert should_drop_tournament("ConIFA Challenger Cup")    # diversa capitalizzazione
+
+
 def test_should_not_drop_normal_tournaments():
     assert not should_drop_tournament("Friendly")
     assert not should_drop_tournament("FIFA World Cup")
