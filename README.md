@@ -33,6 +33,31 @@ pip install -r requirements.txt
 pytest -q
 ```
 
+## Acquisizione dati
+
+Il dataset storico delle partite tra nazionali è scaricato da Kaggle
+([`martj42/international-football-results-from-1872-to-2017`](https://www.kaggle.com/datasets/martj42/international-football-results-from-1872-to-2017),
+aggiornato al presente nonostante il nome) tramite `kagglehub`.
+
+**Setup credenziali.** Crea un file `.env` alla radice del repo (è in `.gitignore`):
+
+```bash
+# .env
+export KAGGLE_API_TOKEN=KGAT_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+Genera il token su [kaggle.com/settings](https://www.kaggle.com/settings) → *API* → *Create New Token*.
+
+**Esecuzione del download:**
+
+```bash
+python -m src.data.download
+```
+
+Output:
+- `data/raw/results.csv` — dataset grezzo (immutabile, mai modificato in-place).
+- `data/raw/metadata.json` — fonte, data download, hash SHA-256, righe, colonne, range temporale.
+
 ## Struttura
 
 ```
