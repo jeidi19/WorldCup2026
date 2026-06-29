@@ -214,6 +214,37 @@ P(score=x) per x grandi (mai usato nella cascata).
 `Outcome90.expected_home_goals = λ` e `expected_away_goals = μ` sono i tassi puri
 che #7 riusa per i supplementari (`λ_ET = λ/3`, `μ_ET = μ/3`).
 
+## Cascata 90'/supplementari/rigori → P(passa il turno)
+
+Per una partita a eliminazione diretta, `src/model/cascade.py` compone i tre rami:
+
+```
+P(home passa) = P(home vince 90')
+              + P(pari 90') · [ P(home vince ET) + P(pari ET) · P(home vince rigori) ]
+```
+
+```python
+from src.config import load_config
+from src.model.cascade import advance_probability_from_config
+from src.model.fit import DixonColesModel
+
+model = DixonColesModel.load("data/models/dixon_coles.json")
+cfg = load_config()
+out = advance_probability_from_config(model, "Spain", "England", cfg, is_neutral=True)
+# AdvanceOutcome(
+#   p_home_advance=0.563, p_away_advance=0.437,
+#   p_home_win_90=0.396, p_draw_90=0.317, p_away_win_90=0.287,
+#   p_home_win_et=0.241, p_draw_et=0.336, p_away_win_et=0.423,
+#   p_home_win_penalty=0.500, penalty_favorite="home",
+#   ...
+# )
+```
+
+Tutti i passaggi della cascata sono esposti in `AdvanceOutcome` per debug e per il MC
+del bracket (#16). I supplementari usano una mini-matrice con `λ_ET = λ · k_λ` e
+`μ_ET = μ · k_μ` (default `k_λ = k_μ = 1/3`, configurabile in `config.yaml`); i rigori
+sono una coin flip pesata con `+edge_to_favorite` al favorito sui 90' (default 0).
+
 ## Struttura
 
 ```
