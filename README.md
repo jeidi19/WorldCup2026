@@ -58,6 +58,26 @@ Output:
 - `data/raw/results.csv` — dataset grezzo (immutabile, mai modificato in-place).
 - `data/raw/metadata.json` — fonte, data download, hash SHA-256, righe, colonne, range temporale.
 
+## Pulizia dati
+
+```bash
+python -m src.data.clean
+```
+
+Genera `data/processed/matches_clean.parquet` applicando:
+- Drop righe con NaN sui punteggi (tipicamente partite future già schedulate).
+- Drop entità non-FIFA / regionali / micronazioni (deny-list versionata in
+  `src/data/team_policies.py`).
+- Normalizzazione nomi (alias documentati, attualmente vuoto).
+- `neutral` coerced a booleano puro.
+- `match_id` come hash SHA-1 troncato di `(date|home|away)` — stabile tra rebuild.
+- Ordine cronologico crescente.
+
+**Policy sulle entità storiche.** Le squadre estinte (German DR, Yugoslavia, Czechoslovakia,
+North Vietnam, Vietnam Republic) sono MANTENUTE come segnale (servono per stimare le forze
+delle squadre superstiti), ma non saranno predette al Mondiale 2026 perché non sono in
+tabellone. Vedi `src/data/team_policies.py` per i dettagli.
+
 ## Struttura
 
 ```
