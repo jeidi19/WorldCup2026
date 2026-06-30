@@ -276,6 +276,42 @@ out = advance_probability_from_config(model, "Argentina", "Brazil", cfg,
 Priorità dei parametri (top→bottom): `home_advantage_scale` esplicito > `venue_country` +
 `host_policy` > `is_neutral`.
 
+## Validazione temporale (Issue #9)
+
+Lo split del dataset è SEMPRE temporale: il modello viene fittato su tutte le partite
+fino a una `cutoff_date` e valutato sulle partite successive. Niente shuffle (sarebbe
+data leakage garantito, cfr. Principio #3 del piano).
+
+```python
+from src.validation.temporal_split import temporal_split
+
+split = temporal_split(df_clean, "2022-12-31")
+# split.train_df: date <= cutoff (anti-leakage check automatico in __post_init__)
+# split.test_df:  date > cutoff
+```
+
+**Metriche** (`src/validation/evaluation.py`): multinomial log-loss + Brier multi-classe
++ accuracy sugli esiti 90' (home / draw / away). Le partite con squadre fuori dal
+modello (es. squadre nuove emerse solo nel test) vengono saltate e contate.
+
+**Grid search di ξ** (`src/validation/grid_search.py`): per ogni `half_life_years` nel
+grid, ri-fitta il modello con `reference_date = cutoff_date` e valuta sul test set.
+Il ξ ottimo è quello che minimizza la log-loss out-of-sample.
+
+```bash
+# Esegue il grid su un cutoff (~60 min con 6 valori di emivita su laptop)
+python -m src.validation --cutoff 2022-12-31
+
+# Override del grid
+python -m src.validation --cutoff 2022-12-31 --half-lives 1.5 2.0 2.5
+```
+
+Output: `data/validation/grid_xi_<cutoff>.json` + `.csv` con una riga per emivita
+(log_loss, brier, accuracy, gamma, rho, converged).
+
+**Walk-forward** (`src/validation/walk_forward.py`, opzionale): più cutoff progressivi
+per robustezza statistica. Non eseguito di default (5× più lento del grid singolo).
+
 ## Struttura
 
 ```
